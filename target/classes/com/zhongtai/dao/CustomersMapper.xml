@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhongtai.dao.CustomersMapper">
+
+    <resultMap id="CustomersResultMap" type="Customers">
+        <id column="id" property="id"/>
+        <result property="name" column="name"/>
+        <result property="phone" column="phone"/>
+        <result property="number" column="number"/>
+        <result property="applyMoney" column="apply_money"/>
+        <result property="borrowMoney" column="borrow_money"/>
+        <result property="submitDatetime" column="submit_datetime"/>
+        <association property="organization" column="organize_id" resultMap="OrganizationResultMap"/>
+        <association property="process" column="process_id" resultMap="ProcessResultMap"/>
+        <association property="users" column="user_id" resultMap="UsersResultMap"/>
+    </resultMap>
+
+    <resultMap id="OrganizationResultMap" type="Organization">
+        <id column="organize_id" property="id"/>
+        <result property="name" column="organization_name"/>
+        <result property="ratio" column="ratio"/>
+    </resultMap>
+
+    <resultMap id="ProcessResultMap" type="Process">
+        <id property="id" column="process_id"/>
+        <result property="message" column="message"/>
+    </resultMap>
+
+    <resultMap id="UsersResultMap" type="Users">
+        <id property="id" column="user_id"/>
+        <result property="name" column="user_name"/>
+    </resultMap>
+
+    <resultMap id="WhereIdResultMap" type="Process">
+        <id property="id" column="id"/>
+        <result property="phone" column="phone"/>
+        <result property="message" column="message"/>
+    </resultMap>
+
+    <select id="selectCustomers" resultMap="CustomersResultMap">
+        SELECT customers.*,organization.`name` AS organization_name,organization.`ratio`,process.id AS process_id,process.`message`,users.`name` AS user_name FROM customers
+        LEFT JOIN organization ON customers.`organize_id`=organization.`id`
+        LEFT JOIN `process` ON customers.`process_id`=process.`id`
+        LEFT JOIN users ON customers.`user_id`=users.`id` ORDER BY id DESC;
+    </select>
+
+    <select id="selectById" resultMap="CustomersResultMap">
+        SELECT customers.*,organization.`name` AS organization_name,organization.`ratio`,process.id AS process_id,process.`message`,users.`name` AS user_name FROM customers
+        LEFT JOIN organization ON customers.`organize_id`=organization.`id`
+        LEFT JOIN `process` ON customers.`process_id`=process.`id`
+        LEFT JOIN users ON customers.`user_id`=users.`id`
+        <if test="id!=null">
+            WHERE id = #{id}
+        </if>
+        ORDER BY id DESC;
+    </select>
+
+    <select id="selectWhereId" resultMap="WhereIdResultMap">
+        SELECT customers.phone,process.id,process.message FROM customers
+        LEFT JOIN `process` ON customers.`process_id`=process.`id`
+        WHERE customers.id = #{id};
+    </select>
+
+    <select id="selectLike"  resultMap="CustomersResultMap">
+        SELECT customers.*,organization.`name` AS organization_name,organization.`ratio`,process.id AS process_id,process.`message`,users.`name` AS user_name FROM customers
+        LEFT JOIN organization ON customers.`organize_id`=organization.`id`
+        LEFT JOIN `process` ON customers.`process_id`=process.`id`
+        LEFT JOIN users ON customers.`user_id`=users.`id`
+        WHERE customers.`name` LIKE '%${search}%'
+        OR customers.`number` LIKE '%${search}%'
+        OR customers.`phone` LIKE '%${search}%'
+        OR organization.`name` LIKE '%${search}%'
+        OR users.`name` LIKE '%${search}%'
+        OR process.`message` LIKE '%${search}%'
+        ORDER BY id DESC;
+    </select>
+    
+    <select id="selectPersonalCustomers" resultMap="CustomersResultMap">
+        SELECT customers.*,organization.`name` AS organization_name,organization.`ratio`,process.id AS process_id,process.`message`,users.`name` AS user_name FROM customers
+        LEFT JOIN organization ON customers.`organize_id`=organization.`id`
+        LEFT JOIN `process` ON customers.`process_id`=process.`id`
+        LEFT JOIN users ON customers.`user_id`=users.`id`
+        WHERE users.name = NULL
+        ORDER BY id DESC;
+    </select>
+
+    <insert id="insertCustomers" parameterType="Customers">
+        INSERT INTO customers(name,number,phone,organize_id,apply_money,process_id,borrow_money,user_id,submit_datetime)
+        VALUES(#{name},#{number},#{phone},#{organizeId},#{applyMoney},#{processId},#{borrowMoney},#{userId},current_timestamp());
+    </insert>
+
+    <update id="updateCustomers" parameterType="Customers">
+        UPDATE customers
+        SET id = #{id}
+        <if test="name!=null">
+            ,name= #{name}
+        </if>
+        <if test="number!=null">
+            ,number = #{number}
+        </if>
+        <if test="phone!=null">
+            ,phone = #{phone}
+        </if>
+        <if test="organizeId!=null">
+            ,organize_id = #{organizeId}
+        </if>
+        <if test="applyMoney!=null">
+            ,apply_money = #{applyMoney}
+        </if>
+        <if test="processId!=null">
+            ,process_id = #{processId}
+        </if>
+        <if test="borrowMoney!=null">
+            ,borrow_money = #{borrowMoney}
+        </if>
+        <if test="userId!=null">
+            ,user_id = #{userId}
+        </if>
+        <if test="submitDatetime!=null">
+            ,submit_datetime=current_timestamp()
+        </if>
+
+        WHERE id = #{id};
+    </update>
+
+    <delete id="deleteCustomers">
+        DELETE FROM customers
+        WHERE id = #{id};
+    </delete>
+
+
+</mapper>

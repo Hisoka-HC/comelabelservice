@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zhongtai.dao.UsersMapper">
+    <resultMap id="UsersResultMap" type="Users">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="sex" property="sex"/>
+        <result column="phone" property="phone"/>
+        <association property="group" column="group_id" resultMap="GroupResultMap"/>
+        <association property="department" column="department_id" resultMap="DepartmentResultMap"/>
+    </resultMap>
+
+    <resultMap id="GroupResultMap" type="Groups">
+        <id column="group_id" property="id"/>
+        <result column="name" property="name"/>
+    </resultMap>
+
+    <resultMap id="DepartmentResultMap" type="Department">
+        <id property="id" column="department_id"/>
+        <result property="name" column="name"/>
+    </resultMap>
+
+    <select id="selectUsers" resultMap="UsersResultMap">
+        SELECT users.*,xiaozu.`id` AS group_id,xiaozu.`name` AS group_name,department.id AS department_id,department.name AS department_name  FROM users
+        LEFT JOIN xiaozu ON users.`group_id`=xiaozu.`id`
+        LEFT JOIN department ON users.`department_id`=department.`id`
+        <if test="id!=null">
+            WHERE users.id = #{id}
+        </if>
+        ;
+    </select>
+
+    <select id="login" resultType="Users">
+        SELECT * FROM users
+        WHERE username=#{username}
+        AND password = #{password};
+    </select>
+
+    <update id="updateUsers" parameterType="Users">
+        UPDATE users
+        SET id = #{id}
+        <if test="name!=null">
+            ,username= #{username}
+        </if>
+        <if test="password!=null">
+            ,password = #{password}
+        </if>
+        <if test="name!=null">
+            ,name = #{name}
+        </if>
+        <if test="sex!=null">
+            ,sex = #{sex}
+        </if>
+        <if test="phone!=null">
+            ,phone = #{phone}
+        </if>
+        <if test="groupId!=null">
+            ,group_id = #{groupId}
+        </if>
+        <if test="departmentId!=null">
+            ,department_id = #{departmentId}
+        </if>
+        WHERE id =#{id};
+    </update>
+
+    <insert id="insertUsers" parameterType="Users">
+        INSERT INTO users(username,password,name,sex,phone,group_id,department_id)
+        VALUES(#{username},#{password},#{name},#{sex},#{phone},#{groupId},#{departmentId});
+    </insert>
+
+    <delete id="deleteUsers">
+        DELETE FROM users
+        WHERE id = #{id};
+    </delete>
+
+</mapper>
